@@ -32,9 +32,9 @@ app.add_middleware(
 )
 
 # API routes
-app.include_router(contacts.router)
-app.include_router(deals.router)
-app.include_router(tasks.router)
+app.include_router(contacts.router, prefix="/api")
+app.include_router(deals.router, prefix="/api")
+app.include_router(tasks.router, prefix="/api")
 
 # Health check route
 @app.get("/health")

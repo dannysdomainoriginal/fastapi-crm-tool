@@ -14,6 +14,8 @@ import type { Deal, DealCreate, DealUpdate } from '../types';
 const DealsPage: React.FC = () => {
   const { data: deals = [], isLoading: isDealsLoading, error: dealsError, refetch: refetchDeals } = useDealsQuery();
   const { data: contacts = [], isLoading: isContactsLoading } = useContactsQuery();
+
+  const isLoading = isDealsLoading || isContactsLoading;
   
   const createMutation = useCreateDealMutation();
   const updateMutation = useUpdateDealMutation();
@@ -138,7 +140,7 @@ const DealsPage: React.FC = () => {
           contacts={contacts}
           onEdit={startEdit}
           onDelete={handleDeleteDeal}
-          isLoading={isDealsLoading}
+          isLoading={isLoading}
         />
       )}
     </div>

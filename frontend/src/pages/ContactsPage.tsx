@@ -1,55 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ContactList from '../components/ContactList';
 import ContactForm from '../components/ContactForm';
-import { contactsApi } from '../services/api';
+import { 
+  useContactsQuery, 
+  useCreateContactMutation, 
+  useUpdateContactMutation, 
+  useDeleteContactMutation 
+} from '../hooks/api/useContacts';
 import type { Contact, ContactCreate, ContactUpdate } from '../types';
 
 const ContactsPage: React.FC = () => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: contacts = [], isLoading, error, refetch } = useContactsQuery();
+  const createMutation = useCreateContactMutation();
+  const updateMutation = useUpdateContactMutation();
+  const deleteMutation = useDeleteContactMutation();
+
   const [isAdding, setIsAdding] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
-  // Load contacts on mount
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
-  const loadContacts = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await contactsApi.getAll();
-      setContacts(data);
-    } catch (err) {
-      setError('Failed to load contacts');
-      console.error('Error loading contacts:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleAddContact = async (newContact: ContactCreate | ContactUpdate) => {
     try {
-      const created = await contactsApi.create(newContact as ContactCreate);
-      setContacts([...contacts, created]);
+      await createMutation.mutateAsync(newContact as ContactCreate);
       setIsAdding(false);
     } catch (err) {
-      console.error('Error creating contact:', err);
       alert('Failed to create contact');
     }
   };
 
   const handleEditContact = async (updatedContact: ContactCreate | ContactUpdate) => {
     if (!editingContact) return;
-    
     try {
-      const updated = await contactsApi.update(editingContact.id, updatedContact as ContactUpdate);
-      setContacts(contacts.map(c => c.id === editingContact.id ? updated : c));
+      await updateMutation.mutateAsync({ id: editingContact.id, contact: updatedContact as ContactUpdate });
       setEditingContact(null);
     } catch (err) {
-      console.error('Error updating contact:', err);
       alert('Failed to update contact');
     }
   };
@@ -58,12 +41,9 @@ const ContactsPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this contact?')) {
       return;
     }
-    
     try {
-      await contactsApi.delete(id);
-      setContacts(contacts.filter(c => c.id !== id));
+      await deleteMutation.mutateAsync(id);
     } catch (err) {
-      console.error('Error deleting contact:', err);
       alert('Failed to delete contact');
     }
   };
@@ -77,9 +57,9 @@ const ContactsPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+          Failed to load contacts
           <button 
-            onClick={loadContacts}
+            onClick={() => refetch()}
             className="ml-4 underline"
           >
             Retry
@@ -130,3 +110,4 @@ const ContactsPage: React.FC = () => {
 };
 
 export default ContactsPage;
+

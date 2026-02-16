@@ -47,9 +47,9 @@ export interface DealUpdate {
   contact_id?: number | null;
 }
 
-export type DealStage = 'New' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost';
+export type DealStage = 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed';
 
-export const DEAL_STAGES: DealStage[] = ['New', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'];
+export const DEAL_STAGES: DealStage[] = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed'];
 
 // Task Types
 export interface Task {

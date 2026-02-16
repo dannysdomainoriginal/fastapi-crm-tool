@@ -1,54 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TaskList from '../components/TaskList';
 import TaskForm from '../components/TaskForm';
-import { tasksApi } from '../services/api';
+import { 
+  useTasksQuery, 
+  useCreateTaskMutation, 
+  useUpdateTaskMutation, 
+  useDeleteTaskMutation 
+} from '../hooks/api/useTasks';
 import type { Task, TaskCreate, TaskUpdate } from '../types';
 
 const TasksPage: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: tasks = [], isLoading, error, refetch } = useTasksQuery();
+  const createMutation = useCreateTaskMutation();
+  const updateMutation = useUpdateTaskMutation();
+  const deleteMutation = useDeleteTaskMutation();
+
   const [isAdding, setIsAdding] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
-
-  const loadTasks = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await tasksApi.getAll();
-      setTasks(data);
-    } catch (err) {
-      setError('Failed to load tasks');
-      console.error('Error loading tasks:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleAddTask = async (newTask: TaskCreate | TaskUpdate) => {
     try {
-      const created = await tasksApi.create(newTask as TaskCreate);
-      setTasks([...tasks, created]);
+      await createMutation.mutateAsync(newTask as TaskCreate);
       setIsAdding(false);
     } catch (err) {
-      console.error('Error creating task:', err);
       alert('Failed to create task');
     }
   };
 
   const handleEditTask = async (updatedTask: TaskCreate | TaskUpdate) => {
     if (!editingTask) return;
-    
     try {
-      const updated = await tasksApi.update(editingTask.id, updatedTask as TaskUpdate);
-      setTasks(tasks.map(t => t.id === editingTask.id ? updated : t));
+      await updateMutation.mutateAsync({ id: editingTask.id, task: updatedTask as TaskUpdate });
       setEditingTask(null);
     } catch (err) {
-      console.error('Error updating task:', err);
       alert('Failed to update task');
     }
   };
@@ -57,12 +41,9 @@ const TasksPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this task?')) {
       return;
     }
-    
     try {
-      await tasksApi.delete(id);
-      setTasks(tasks.filter(t => t.id !== id));
+      await deleteMutation.mutateAsync(id);
     } catch (err) {
-      console.error('Error deleting task:', err);
       alert('Failed to delete task');
     }
   };
@@ -70,10 +51,8 @@ const TasksPage: React.FC = () => {
   const handleToggleStatus = async (task: Task) => {
     const newStatus = task.status === 'Completed' ? 'Pending' : 'Completed';
     try {
-      const updated = await tasksApi.update(task.id, { status: newStatus });
-      setTasks(tasks.map(t => t.id === task.id ? updated : t));
+      await updateMutation.mutateAsync({ id: task.id, task: { status: newStatus } });
     } catch (err) {
-      console.error('Error updating task status:', err);
       alert('Failed to update task status');
     }
   };
@@ -87,9 +66,9 @@ const TasksPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+          Failed to load tasks
           <button 
-            onClick={loadTasks}
+            onClick={() => refetch()}
             className="ml-4 underline"
           >
             Retry
@@ -141,3 +120,4 @@ const TasksPage: React.FC = () => {
 };
 
 export default TasksPage;
+

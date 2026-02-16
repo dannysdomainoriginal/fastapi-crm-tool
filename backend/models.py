@@ -29,7 +29,7 @@ class ContactUpdate(SQLModel):
 class DealBase(SQLModel):
     title: str
     value: float
-    stage: str = Field(default="New")
+    stage: str = Field(default="Lead")
     contact_id: Optional[int] = Field(default=None, foreign_key="contact.id")
 
 class Deal(DealBase, table=True):

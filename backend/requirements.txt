@@ -1,3 +1,8 @@
 fastapi
 uvicorn[standard]
 sqlmodel
+sqlalchemy[asyncio]
+aiosqlite
+python-jose[cryptography]
+python-multipart
+pydantic-settings

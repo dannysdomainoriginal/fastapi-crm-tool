@@ -2,6 +2,18 @@ from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 
+class UserBase(SQLModel):
+    email: str = Field(unique=True, index=True)
+    full_name: Optional[str] = None
+
+class User(UserBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    hashed_password: str
+    
+    contacts: List["Contact"] = Relationship(back_populates="user")
+    deals: List["Deal"] = Relationship(back_populates="user")
+    tasks: List["Task"] = Relationship(back_populates="user")
+
 class ContactBase(SQLModel):
     name: str = Field(index=True)
     email: Optional[str] = Field(default=None, index=True)
@@ -11,6 +23,9 @@ class ContactBase(SQLModel):
 
 class Contact(ContactBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    
+    user: Optional[User] = Relationship(back_populates="contacts")
     deals: List["Deal"] = Relationship(back_populates="contact")
 
 class ContactCreate(ContactBase):
@@ -18,6 +33,7 @@ class ContactCreate(ContactBase):
 
 class ContactRead(ContactBase):
     id: int
+    user_id: int
 
 class ContactUpdate(SQLModel):
     name: Optional[str] = None
@@ -34,6 +50,9 @@ class DealBase(SQLModel):
 
 class Deal(DealBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    
+    user: Optional[User] = Relationship(back_populates="deals")
     contact: Optional[Contact] = Relationship(back_populates="deals")
 
 class DealCreate(DealBase):
@@ -41,6 +60,7 @@ class DealCreate(DealBase):
 
 class DealRead(DealBase):
     id: int
+    user_id: int
 
 class DealUpdate(SQLModel):
     title: Optional[str] = None
@@ -57,12 +77,16 @@ class TaskBase(SQLModel):
 
 class Task(TaskBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    
+    user: Optional[User] = Relationship(back_populates="tasks")
 
 class TaskCreate(TaskBase):
     pass
 
 class TaskRead(TaskBase):
     id: int
+    user_id: int
 
 class TaskUpdate(SQLModel):
     title: Optional[str] = None

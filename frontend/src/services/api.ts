@@ -8,7 +8,9 @@ import type {
   DealUpdate,
   Task,
   TaskCreate,
-  TaskUpdate
+  TaskUpdate,
+  User,
+  AuthResponse
 } from '../types';
 
 const API_URL = import.meta.env.DEV ? "http://localhost:8000/api" : "/api"
@@ -19,6 +21,36 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Interceptor to add auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// ============= AUTH API =============
+export const authApi = {
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
+    const response = await api.post<AuthResponse>('/auth/login', params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
+  },
+  signup: async (data: any): Promise<User> => {
+    const response = await api.post<User>('/auth/signup', data);
+    return response.data;
+  },
+  getMe: async (): Promise<User> => {
+    const response = await api.get<User>('/auth/me');
+    return response.data;
+  }
+};
 
 // ============= CONTACTS API =============
 

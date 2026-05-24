@@ -1,6 +1,19 @@
+// User Types
+export interface User {
+  id: number;
+  email: string;
+  full_name: string | null;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+}
+
 // Contact Types
 export interface Contact {
   id: number;
+  user_id: number;
   name: string;
   email: string | null;
   phone: string | null;
@@ -27,6 +40,7 @@ export interface ContactUpdate {
 // Deal Types
 export interface Deal {
   id: number;
+  user_id: number;
   title: string;
   value: number;
   stage: DealStage;
@@ -54,6 +68,7 @@ export const DEAL_STAGES: DealStage[] = ['Lead', 'Qualified', 'Proposal', 'Negot
 // Task Types
 export interface Task {
   id: number;
+  user_id: number;
   title: string;
   description: string | null;
   due_date: string | null;

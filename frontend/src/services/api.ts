@@ -13,7 +13,7 @@ import type {
   AuthResponse
 } from '../types';
 
-const API_URL = import.meta.env.DEV ? "http://localhost:8000/api" : "/api"
+const API_URL = import.meta.env.DEV ? "http://localhost:8002/api" : "/api"
 
 const api = axios.create({
   baseURL: API_URL,

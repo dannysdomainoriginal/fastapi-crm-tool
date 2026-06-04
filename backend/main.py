@@ -38,7 +38,7 @@ app.include_router(deals.router, prefix="/api")
 app.include_router(tasks.router, prefix="/api")
 
 # Health check route
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {"status": "ok"}
 
